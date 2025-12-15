@@ -9,33 +9,51 @@
                 <img src="{{ asset('storage/media/logo-gec.png') }}" alt="Logo" class="h-10 w-auto">
             </a>
 
+            @php
+                use App\Models\NavigationItem;
+                $navItems = NavigationItem::getActive();
+            @endphp
+
             {{-- Desktop Menu --}}
             <ul class="hidden lg:flex space-x-8 items-center">
-                <li>
-                    <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active-link' : '' }}">
-                        Home
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url('/about') }}" class="nav-link {{ request()->is('about') ? 'active-link' : '' }}">
-                        About Us
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url('/blog') }}" class="nav-link {{ request()->is('blog*') ? 'active-link' : '' }}">
-                        Blog
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url('/product') }}" class="nav-link {{ request()->is('product*') ? 'active-link' : '' }}">
-                        Product
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url('/contact') }}" class="nav-link {{ request()->is('contact') ? 'active-link' : '' }}">
-                        Contact
-                    </a>
-                </li>
+                @if($navItems->count() > 0)
+                    @foreach($navItems as $item)
+                    <li>
+                        <a href="{{ url($item->url) }}" 
+                           class="nav-link {{ $item->route_pattern && request()->is($item->route_pattern) ? 'active-link' : '' }}"
+                           target="{{ $item->target ?? '_self' }}">
+                            {{ $item->label }}
+                        </a>
+                    </li>
+                    @endforeach
+                @else
+                    {{-- Default Menu (fallback) --}}
+                    <li>
+                        <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active-link' : '' }}">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/about') }}" class="nav-link {{ request()->is('about') ? 'active-link' : '' }}">
+                            About Us
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/blog') }}" class="nav-link {{ request()->is('blog*') ? 'active-link' : '' }}">
+                            Blog
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/product') }}" class="nav-link {{ request()->is('product*') ? 'active-link' : '' }}">
+                            Product
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/contact') }}" class="nav-link {{ request()->is('contact') ? 'active-link' : '' }}">
+                            Contact
+                        </a>
+                    </li>
+                @endif
             </ul>
 
             {{-- Social Icons (Desktop) --}}
@@ -67,21 +85,32 @@
         {{-- Mobile Menu --}}
         <div id="mobile-menu" class="lg:hidden hidden overflow-hidden transition-all duration-300 ease-in-out max-h-0">
             <div class="px-4 pt-2 pb-4 space-y-2 bg-gray-50 border-t">
-                <a href="{{ url('/') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('/') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
-                    Home
-                </a>
-                <a href="{{ url('/about') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('about') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
-                    About Us
-                </a>
-                <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('blog*') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
-                    Blog
-                </a>
-                <a href="{{ url('/product') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('product*') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
-                    Product
-                </a>
-                <a href="{{ url('/contact') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('contact') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
-                    Contact
-                </a>
+                @if($navItems->count() > 0)
+                    @foreach($navItems as $item)
+                    <a href="{{ url($item->url) }}" 
+                       class="block px-3 py-2 rounded-md nav-link {{ $item->route_pattern && request()->is($item->route_pattern) ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}"
+                       target="{{ $item->target ?? '_self' }}">
+                        {{ $item->label }}
+                    </a>
+                    @endforeach
+                @else
+                    {{-- Default Menu (fallback) --}}
+                    <a href="{{ url('/') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('/') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
+                        Home
+                    </a>
+                    <a href="{{ url('/about') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('about') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
+                        About Us
+                    </a>
+                    <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('blog*') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
+                        Blog
+                    </a>
+                    <a href="{{ url('/product') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('product*') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
+                        Product
+                    </a>
+                    <a href="{{ url('/contact') }}" class="block px-3 py-2 rounded-md nav-link {{ request()->is('contact') ? 'active-link bg-blue-50' : 'hover:bg-gray-100' }}">
+                        Contact
+                    </a>
+                @endif
 
                 {{-- Social Icons (Mobile) --}}
                 <div class="flex space-x-4 pt-4 px-3 border-t">

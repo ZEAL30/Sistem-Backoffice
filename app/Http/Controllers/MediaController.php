@@ -124,4 +124,39 @@ class MediaController extends Controller
         $medias = Media::latest()->get();
         return response()->json($medias);
     }
+
+    /**
+     * API List Media
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = Media::latest();
+
+        // Filter by user
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Search by filename or alt_text
+        if ($request->has('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('filename', 'like', '%' . $request->search . '%')
+                  ->orWhere('alt_text', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $perPage = $request->get('per_page', 20);
+        $medias = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $medias->items(),
+            'meta' => [
+                'current_page' => $medias->currentPage(),
+                'last_page' => $medias->lastPage(),
+                'per_page' => $medias->perPage(),
+                'total' => $medias->total(),
+            ],
+        ]);
+    }
 }

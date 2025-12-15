@@ -52,6 +52,24 @@
             </li>
             @endif
 
+            <!-- Page Builder (Admin & Editor) -->
+            @if($userRole === 'Administrator' || $userRole === 'Editor')
+            <li class="nav-item">
+                <a href="#" class="nav-link nav-toggle {{ request()->routeIs('page-builder.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'page-builder-menu')">
+                    <i class="icon-page-builder"></i>
+                    <span>Page Builder</span>
+                    <i class="icon-chevron" style="margin-left: auto;"></i>
+                </a>
+                <ul class="submenu {{ request()->routeIs('page-builder.*') ? 'show' : '' }}" id="page-builder-menu">
+                    <li><a href="{{ route('page-builder.index') }}" class="submenu-link">🎨 Dashboard</a></li>
+                    <li><a href="{{ route('page-builder.hero.index') }}" class="submenu-link">🚀 Hero Section</a></li>
+                    <li><a href="{{ route('page-builder.testimonial.index') }}" class="submenu-link">💬 Testimonial</a></li>
+                    <li><a href="{{ route('page-builder.navigation.index') }}" class="submenu-link">🧭 Navigation</a></li>
+                    <li><a href="{{ route('footer.edit') }}" class="submenu-link">🦶 Footer</a></li>
+                </ul>
+            </li>
+            @endif
+
 
             <!-- Image (Admin Only) -->
             @if($userRole === 'Administrator')

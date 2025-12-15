@@ -192,4 +192,172 @@ class ProductController extends Controller
 
         return redirect()->route('product.index')->with('success', 'Produk berhasil dihapus.');
     }
+
+    // ==================== API METHODS ====================
+
+    /**
+     * API List Products (Public)
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = Product::where('is_active', true)->with('categories');
+
+        // Search by name
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by category
+        if ($request->has('category') && !empty($request->category)) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('category_id', $request->category);
+            });
+        }
+
+        // Price range filter
+        if ($request->has('min_price') && !empty($request->min_price)) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price') && !empty($request->max_price)) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Sort
+        $sort = $request->get('sort', 'created_at');
+        if ($sort === 'price') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'name') {
+            $query->orderBy('name', 'asc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $perPage = $request->get('per_page', 12);
+        $products = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $products->items(),
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * API Show Product (Public)
+     */
+    public function apiShow($slug)
+    {
+        $product = Product::where('slug', $slug)
+            ->where('is_active', true)
+            ->with('categories')
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => $product,
+        ]);
+    }
+
+    /**
+     * API Store Product
+     */
+    public function apiStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:products|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'featured_image' => 'nullable|string',
+            'is_active' => 'boolean',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
+        ]);
+
+        $product = Product::create([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'description' => !empty($validated['description']) ? HtmlSanitizer::purify($validated['description']) : null,
+            'price' => $validated['price'],
+            'featured_image' => $validated['featured_image'] ?? null,
+            'is_active' => $request->has('is_active') ? ($request->is_active ? 1 : 0) : 1,
+        ]);
+
+        // Attach categories
+        if (!empty($validated['categories'])) {
+            $product->categories()->attach($validated['categories']);
+        }
+
+        $product->load('categories');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product created successfully',
+            'data' => $product,
+        ], 201);
+    }
+
+    /**
+     * API Update Product
+     */
+    public function apiUpdate(Request $request, $slug)
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'slug' => 'sometimes|required|string|unique:products,slug,' . $product->id . '|max:255',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|required|numeric|min:0',
+            'featured_image' => 'nullable|string',
+            'is_active' => 'boolean',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
+        ]);
+
+        $product->update([
+            'name' => $validated['name'] ?? $product->name,
+            'slug' => $validated['slug'] ?? $product->slug,
+            'description' => isset($validated['description']) ? (!empty($validated['description']) ? HtmlSanitizer::purify($validated['description']) : null) : $product->description,
+            'price' => $validated['price'] ?? $product->price,
+            'featured_image' => $validated['featured_image'] ?? $product->featured_image,
+            'is_active' => isset($validated['is_active']) ? ($validated['is_active'] ? 1 : 0) : $product->is_active,
+        ]);
+
+        // Sync categories
+        if (isset($validated['categories'])) {
+            if (!empty($validated['categories'])) {
+                $product->categories()->sync($validated['categories']);
+            } else {
+                $product->categories()->detach();
+            }
+        }
+
+        $product->load('categories');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product updated successfully',
+            'data' => $product,
+        ]);
+    }
+
+    /**
+     * API Destroy Product
+     */
+    public function apiDestroy($slug)
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+        $product->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product deleted successfully',
+        ]);
+    }
 }

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\FooterController;
+use App\Http\Controllers\PageBuilderController;
 use App\Http\Controllers\Comments\CommentController;
 use App\Models\Post;
 
@@ -156,6 +158,38 @@ Route::middleware(['sanitize','auth'])->group(function () {
         Route::delete('/admin/posts/{slug}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('post.destroy');
     });
 
+    // Footer routes (Admin, Editor)
+    Route::middleware('role:Administrator,Editor')->group(function () {
+        Route::get('/admin/footer', [FooterController::class, 'index'])->name('footer.index');
+        Route::get('/admin/footer/edit', [FooterController::class, 'edit'])->name('footer.edit');
+        Route::put('/admin/footer', [FooterController::class, 'update'])->name('footer.update');
+    });
+
+    // Page Builder routes (Admin, Editor)
+    Route::middleware('role:Administrator,Editor')->group(function () {
+        Route::get('/admin/page-builder', [PageBuilderController::class, 'index'])->name('page-builder.index');
+
+        // Hero routes
+        Route::get('/admin/page-builder/hero', [PageBuilderController::class, 'heroIndex'])->name('page-builder.hero.index');
+        Route::get('/admin/page-builder/hero/edit', [PageBuilderController::class, 'heroEdit'])->name('page-builder.hero.edit');
+        Route::put('/admin/page-builder/hero', [PageBuilderController::class, 'heroUpdate'])->name('page-builder.hero.update');
+
+        // Testimonial routes
+        Route::get('/admin/page-builder/testimonial', [PageBuilderController::class, 'testimonialIndex'])->name('page-builder.testimonial.index');
+        Route::get('/admin/page-builder/testimonial/create', [PageBuilderController::class, 'testimonialEdit'])->name('page-builder.testimonial.create');
+        Route::get('/admin/page-builder/testimonial/{id}/edit', [PageBuilderController::class, 'testimonialEdit'])->name('page-builder.testimonial.edit');
+        Route::post('/admin/page-builder/testimonial', [PageBuilderController::class, 'testimonialStore'])->name('page-builder.testimonial.store');
+        Route::delete('/admin/page-builder/testimonial/{id}', [PageBuilderController::class, 'testimonialDestroy'])->name('page-builder.testimonial.destroy');
+
+        // Navigation routes
+        Route::get('/admin/page-builder/navigation', [PageBuilderController::class, 'navigationIndex'])->name('page-builder.navigation.index');
+        Route::get('/admin/page-builder/navigation/create', [PageBuilderController::class, 'navigationEdit'])->name('page-builder.navigation.create');
+        Route::get('/admin/page-builder/navigation/{id}/edit', [PageBuilderController::class, 'navigationEdit'])->name('page-builder.navigation.edit');
+        Route::post('/admin/page-builder/navigation', [PageBuilderController::class, 'navigationStore'])->name('page-builder.navigation.store');
+        Route::delete('/admin/page-builder/navigation/{id}', [PageBuilderController::class, 'navigationDestroy'])->name('page-builder.navigation.destroy');
+        Route::post('/admin/page-builder/navigation/reorder', [PageBuilderController::class, 'navigationReorder'])->name('page-builder.navigation.reorder');
+    });
+
     // Admin-only routes (Media, Users)
     Route::middleware('role:Administrator')->group(function () {
         // Media management routes
@@ -174,6 +208,7 @@ Route::middleware(['sanitize','auth'])->group(function () {
         Route::delete('/admin/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
         // User management routes
+        
         Route::get('/admin/users', function () {
             $users = \App\Models\User::all();
             return view('admin.auth.show', compact('users'));
@@ -196,21 +231,21 @@ Route::middleware(['sanitize','auth'])->group(function () {
 });
 
 // Test routes untuk melihat error pages (hanya untuk development)
-if (config('app.debug')) {
-    Route::get('/test/403', function () {
-        throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
-    });
+// if (config('app.debug')) {
+//     Route::get('/test/403', function () {
+//         throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+//     });
 
-    Route::get('/test/404', function () {
-        throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
-    });
+//     Route::get('/test/404', function () {
+//         throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+//     });
 
-    Route::get('/test/500', function () {
-        throw new \Exception('Test error 500');
-    });
-}
+//     Route::get('/test/500', function () {
+//         throw new \Exception('Test error 500');
+//     });
+// }
 
-// Fallback route untuk 404
-Route::fallback(function () {
-    throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
-});
+// // Fallback route untuk 404
+// Route::fallback(function () {
+//     throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+// });

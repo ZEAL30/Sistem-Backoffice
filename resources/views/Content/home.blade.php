@@ -4,20 +4,50 @@
 
 @section('content')
 
+@php
+    use App\Models\HeroSection;
+    $hero = HeroSection::getActive();
+@endphp
+
 <!-- Hero Section -->
+@if($hero)
+<section class="text-white py-40" style="background: linear-gradient({{ $hero->background_gradient ?? '45deg, #378981, #5BAF9F' }});">
+    <div class="max-w-7xl mx-auto pl-5 pr-5 flex flex-col lg:flex-row items-center gap-6">
+        <div class="lg:w-1/2 space-y-4">
+            @if($hero->badge_text)
+            <div class="bg-[#006666] px-4 py-2 rounded-full text-sm font-semibold uppercase w-70">{{ $hero->badge_text }}</div>
+            @endif
+            <h1 class="text-4xl lg:text-5xl font-bold">{{ $hero->title }}</h1>
+            @if($hero->description)
+            <p class="text-lg text-white/90">{{ $hero->description }}</p>
+            @endif
+            @if($hero->button_text && $hero->button_url)
+            <a href="{{ url($hero->button_url) }}" class="inline-block bg-[#006666] hover:bg-teal-700 transition px-8 py-3 rounded-full font-semibold shadow-lg">{{ $hero->button_text }}</a>
+            @endif
+        </div>
+        @if($hero->image)
+        <div class="lg:w-1/2 text-center">
+            <img src="{{ asset('storage/' . $hero->image) }}" alt="Hero" class="mx-auto w-full max-w-md">
+        </div>
+        @endif
+    </div>
+</section>
+@else
+<!-- Default Hero (fallback) -->
 <section class="text-white py-40" style="background: linear-gradient(45deg, #378981, #5BAF9F);">
-    <div class="max-w-7xl mx-auto pl-5 pr-5 flex flex-col lg:flex-row items-center gap-6    ">
-        <div class="lg:w-1/2 space-y-4 ">
+    <div class="max-w-7xl mx-auto pl-5 pr-5 flex flex-col lg:flex-row items-center gap-6">
+        <div class="lg:w-1/2 space-y-4">
             <div class="bg-[#006666] px-4 py-2 rounded-full text-sm font-semibold uppercase w-70">WAKTU YANG PAS BUAT UPGRADE PC!</div>
             <h1 class="text-4xl lg:text-5xl font-bold">DESAIN PC SESUAI KEBUTUHANMU</h1>
             <p class="text-lg text-white/90">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vel elit at ligula finibus facilisis. Aenean ultricies consectetur risus, ac blandit dolor tincidunt ut.</p>
-            <a href="{{ url('/contact') }}" class="inline-block bg-[#006666]  hover:bg-teal-700 transition px-8 py-3 rounded-full font-semibold shadow-lg">CONTACT US +</a>
+            <a href="{{ url('/contact') }}" class="inline-block bg-[#006666] hover:bg-teal-700 transition px-8 py-3 rounded-full font-semibold shadow-lg">CONTACT US +</a>
         </div>
         <div class="lg:w-1/2 text-center">
             <img src="{{ asset('storage/media/hero-sec.webp') }}" alt="PC Components" class="mx-auto w-full max-w-md">
         </div>
     </div>
 </section>
+@endif
 
 <!-- Category Cards -->
 <section class="py-16 bg-gray-50">
@@ -43,12 +73,38 @@
     </div>
 </section>
 
+@php
+    use App\Models\TestimonialSection;
+    $testimonials = TestimonialSection::getActive();
+@endphp
+
 <!-- Testimonial Section -->
 <section class="py-16 bg-white">
     <div class="max-w-7xl mx-auto pl-5 pr-5 text-center space-y-6">
         <h2 class="text-3xl font-bold text-teal-700">Apa Kata Mereka Tentang Kami</h2>
         <p class="text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
 
+        @if($testimonials->count() > 0)
+        <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+            @foreach($testimonials as $testimonial)
+            <div class="bg-gray-50 rounded-2xl p-6 shadow-lg">
+                <div class="flex justify-center mb-4">
+                    @if($testimonial->avatar)
+                    <img src="{{ asset('storage/' . $testimonial->avatar) }}" alt="{{ $testimonial->name }}" class="bg-white rounded-full w-20 h-20 object-cover shadow">
+                    @else
+                    <div class="bg-white rounded-full w-20 h-20 flex items-center justify-center shadow">
+                        <i class="bi bi-person-fill text-gray-400 text-3xl"></i>
+                    </div>
+                    @endif
+                </div>
+                <h5 class="text-lg font-bold mb-1">{{ $testimonial->name }}</h5>
+                <p class="text-gray-400 text-sm mb-2">{{ $testimonial->designation ?? 'Customer' }}</p>
+                <p class="text-gray-600 text-sm">{{ $testimonial->testimonial }}</p>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <!-- Default Testimonials (fallback) -->
         <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="bg-gray-50 rounded-2xl p-6 shadow-lg">
                 <div class="flex justify-center mb-4">
@@ -60,7 +116,6 @@
                 <p class="text-gray-400 text-sm mb-2">Designation</p>
                 <p class="text-gray-600 text-sm">freestar freestar Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
             </div>
-
             <div class="bg-gray-50 rounded-2xl p-6 shadow-lg">
                 <div class="flex justify-center mb-4">
                     <div class="bg-white rounded-full w-20 h-20 flex items-center justify-center shadow">
@@ -72,6 +127,7 @@
                 <p class="text-gray-600 text-sm">freestar freestar Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
             </div>
         </div>
+        @endif
     </div>
 </section>
 

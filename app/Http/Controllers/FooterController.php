@@ -23,7 +23,7 @@ class FooterController extends Controller
     public function edit()
     {
         $sections = FooterSection::orderBy('order')->get();
-        
+
         // If no sections exist, create default ones
         if ($sections->isEmpty()) {
             $this->createDefaultSections();
